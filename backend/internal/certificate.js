@@ -449,7 +449,7 @@ const internalCertificate = {
 	 */
 	writeCustomCert: (certificate) => {
 		if (debug_mode) {
-			logger.info('Writing Custom Certificate:', certificate);
+			logger.debug('Writing Custom Certificate:', certificate);
 		}
 
 		let dir = '/data/custom_ssl/npm-' + certificate.id;
@@ -575,10 +575,6 @@ const internalCertificate = {
 					throw new error.ValidationError('Cannot upload certificates for this type of provider');
 				}
 
-				if (debug_mode) {
-					logger.info('certificate.upload data: ' + JSON.stringify(data));
-				}
-
 				return internalCertificate.validate(data)
 					.then((validations) => {
 						if (typeof validations.certificate === 'undefined') {
@@ -586,7 +582,7 @@ const internalCertificate = {
 						}
 
 						if (debug_mode) {
-							logger.info('certificate.upload validate result: ' + JSON.stringify(validations));
+							logger.debug('certificate.upload validate result: ' + JSON.stringify(validations));
 						}
 
 						_.map(data.files, (file, name) => {
@@ -603,7 +599,7 @@ const internalCertificate = {
 						})
 							.then((certificate) => {
 								if (debug_mode) {
-									logger.info('certificate.upload row.meta: ' + row.meta);
+									logger.debug('certificate.upload row.meta: ' + row.meta);
 								}
 								certificate.meta = row.meta;
 								return internalCertificate.writeCustomCert(certificate);
@@ -611,7 +607,7 @@ const internalCertificate = {
 					})
 					.then(() => {
 						if (debug_mode) {
-							logger.info('certificate.upload completed');
+							logger.debug('certificate.upload completed');
 						}
 						return _.pick(row.meta, internalCertificate.allowed_ssl_files);
 					});
@@ -631,21 +627,21 @@ const internalCertificate = {
 				const cmd      = 'openssl ' + key_type + ' -in ' + filepath + ' -check -noout 2>&1 ';
 
 				if (debug_mode) {
-					logger.info('checkPrivateKey type: ' + key_type + ' ...');
-					logger.info('checkPrivateKey command: ' + cmd);
+					logger.debug('checkPrivateKey type: ' + key_type + ' ...');
+					logger.debug('checkPrivateKey command: ' + cmd);
 				}
 
 				return utils.exec(cmd)
 					.then((result) => {
 						if (debug_mode) {
-							logger.info('checkPrivateKey result: ' + result);
+							logger.debug('checkPrivateKey result: ' + result);
 						}
 						if (!result.toLowerCase().includes('key ok') && !result.toLowerCase().includes('key valid') ) {
 							throw new error.ValidationError('Result Validation Error: ' + result);
 						}
 						fs.unlinkSync(filepath);
 						if (debug_mode) {
-							logger.info('checkPrivateKey completed');
+							logger.debug('checkPrivateKey completed');
 						}
 						return true;
 					}).catch((err) => {
@@ -688,13 +684,13 @@ const internalCertificate = {
 		const cmd     = 'openssl x509 -in ' + certificate_file + ' -subject -noout';
 
 		if (debug_mode) {
-			logger.info('getCertificateInfoFromFile command: ' + cmd);
+			logger.debug('getCertificateInfoFromFile command: ' + cmd);
 		}
 
 		return utils.exec(cmd)
 			.then((result) => {
 				if (debug_mode) {
-					logger.info('getCertificateInfoFromFile result: ' + result);
+					logger.debug('getCertificateInfoFromFile result: ' + result);
 				}
 				// subject=CN = something.example.com
 				let regex = /(?:subject=)?[^=]+=\s+(\S+)/gim;
@@ -709,13 +705,13 @@ const internalCertificate = {
 			.then(() => {
 				const cmd2 = 'openssl x509 -in ' + certificate_file + ' -issuer -noout';
 				if (debug_mode) {
-					logger.info('getCertificateInfoFromFile command: ' + cmd2);
+					logger.debug('getCertificateInfoFromFile command: ' + cmd2);
 				}
 				return utils.exec(cmd2);
 			})
 			.then((result) => {
 				if (debug_mode) {
-					logger.info('getCertificateInfoFromFile result: ' + result);
+					logger.debug('getCertificateInfoFromFile result: ' + result);
 				}
 				// issuer=C = US, O = Let's Encrypt, CN = Let's Encrypt Authority X3
 				let regex = /^(?:issuer=)?(.*)$/gim;
@@ -730,13 +726,13 @@ const internalCertificate = {
 			.then(() => {
 				const cmd3 = 'openssl x509 -in ' + certificate_file + ' -dates -noout';
 				if (debug_mode) {
-					logger.info('getCertificateInfoFromFile command: ' + cmd3);
+					logger.debug('getCertificateInfoFromFile command: ' + cmd3);
 				}
 				return utils.exec(cmd3);
 			})
 			.then((result) => {
 				if (debug_mode) {
-					logger.info('getCertificateInfoFromFile result: ' + result);
+					logger.debug('getCertificateInfoFromFile result: ' + result);
 				}
 				// notBefore=Jul 14 04:04:29 2018 GMT
 				// notAfter=Oct 12 04:04:29 2018 GMT
@@ -773,7 +769,7 @@ const internalCertificate = {
 				};
 
 				if (debug_mode) {
-					logger.info('getCertificateInfoFromFile completed: ' + JSON.stringify(cert_data));
+					logger.debug('getCertificateInfoFromFile completed: ' + JSON.stringify(cert_data));
 				}
 
 				return cert_data;
@@ -820,7 +816,7 @@ const internalCertificate = {
 			(le_staging ? '--staging' : '');
 
 		if (debug_mode) {
-			logger.info('Command:', cmd);
+			logger.debug('requestLetsEncryptSsl command:', cmd);
 		}
 
 		return utils.exec(cmd)
@@ -878,7 +874,7 @@ const internalCertificate = {
 		}
 
 		if (debug_mode) {
-			logger.info('Command:', `${credentials_cmd} && ${prepare_cmd} && ${main_cmd}`);
+			logger.debug('requestLetsEncryptSslWithDnsChallenge command:', `${credentials_cmd} && ${prepare_cmd} && ${main_cmd}`);
 		}
 
 		return utils.exec(credentials_cmd)
@@ -959,7 +955,7 @@ const internalCertificate = {
 			(le_staging ? '--staging' : '');
 
 		if (debug_mode) {
-			logger.info('Command:', cmd);
+			logger.debug_mode('renewLetsEncryptSsl command:', cmd);
 		}
 
 		return utils.exec(cmd)
@@ -995,7 +991,7 @@ const internalCertificate = {
 		}
 
 		if (debug_mode) {
-			logger.info('Command:', main_cmd);
+			logger.debug('renewLetsEncryptSslWithDnsChallenge command:', main_cmd);
 		}
 
 		return utils.exec(main_cmd)
@@ -1022,7 +1018,7 @@ const internalCertificate = {
 		const delete_credentials_cmd = `rm -f '/etc/letsencrypt/credentials/credentials-${certificate.id}' || true`;
 
 		if (debug_mode) {
-			logger.info('Command:', main_cmd + '; ' + delete_credentials_cmd);
+			logger.debug('revokeLetsEncryptSsl command:', main_cmd + '; ' + delete_credentials_cmd);
 		}
 
 		return utils.exec(main_cmd)
@@ -1033,7 +1029,7 @@ const internalCertificate = {
 			})
 			.catch((err) => {
 				if (debug_mode) {
-					logger.error(err.message);
+					logger.debug('revokeLetsEncryptSsl error:', err.message);
 				}
 
 				if (throw_errors) {
