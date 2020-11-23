@@ -221,7 +221,7 @@ const internalCertificate = {
 							await certificateModel
 								.query()
 								.deleteById(certificate.id);
-							
+
 							throw error;
 						});
 				} else {
@@ -615,13 +615,26 @@ const internalCertificate = {
 	checkPrivateKey: (private_key) => {
 		return tempWrite(private_key, '/tmp')
 			.then((filepath) => {
-				let key_type = private_key.includes('-----BEGIN RSA') ? 'rsa' : 'ec';
-				return utils.exec('openssl ' + key_type + ' -in ' + filepath + ' -check -noout 2>&1 ')
+				const key_type = private_key.includes('-----BEGIN RSA') ? 'rsa' : 'ec';
+				const cmd      = 'openssl ' + key_type + ' -in ' + filepath + ' -check -noout 2>&1 ';
+
+				if (debug_mode) {
+					logger.info('checkPrivateKey type: ' + key_type + ' ...');
+					logger.info('checkPrivateKey command: ' + cmd);
+				}
+
+				return utils.exec(cmd)
 					.then((result) => {
+						if (debug_mode) {
+							logger.info('checkPrivateKey result: ' + result);
+						}
 						if (!result.toLowerCase().includes('key ok') && !result.toLowerCase().includes('key valid') ) {
 							throw new error.ValidationError('Result Validation Error: ' + result);
 						}
 						fs.unlinkSync(filepath);
+						if (debug_mode) {
+							logger.info('checkPrivateKey completed');
+						}
 						return true;
 					}).catch((err) => {
 						fs.unlinkSync(filepath);
@@ -660,9 +673,17 @@ const internalCertificate = {
 	 */
 	getCertificateInfoFromFile: (certificate_file, throw_expired) => {
 		let cert_data = {};
+		const cmd     = 'openssl x509 -in ' + certificate_file + ' -subject -noout';
 
-		return utils.exec('openssl x509 -in ' + certificate_file + ' -subject -noout')
+		if (debug_mode) {
+			logger.info('getCertificateInfoFromFile command: ' + cmd);
+		}
+
+		return utils.exec(cmd)
 			.then((result) => {
+				if (debug_mode) {
+					logger.info('getCertificateInfoFromFile result: ' + result);
+				}
 				// subject=CN = something.example.com
 				let regex = /(?:subject=)?[^=]+=\s+(\S+)/gim;
 				let match = regex.exec(result);
@@ -674,9 +695,16 @@ const internalCertificate = {
 				cert_data['cn'] = match[1];
 			})
 			.then(() => {
-				return utils.exec('openssl x509 -in ' + certificate_file + ' -issuer -noout');
+				const cmd2 = 'openssl x509 -in ' + certificate_file + ' -issuer -noout';
+				if (debug_mode) {
+					logger.info('getCertificateInfoFromFile command: ' + cmd2);
+				}
+				return utils.exec(cmd2);
 			})
 			.then((result) => {
+				if (debug_mode) {
+					logger.info('getCertificateInfoFromFile result: ' + result);
+				}
 				// issuer=C = US, O = Let's Encrypt, CN = Let's Encrypt Authority X3
 				let regex = /^(?:issuer=)?(.*)$/gim;
 				let match = regex.exec(result);
@@ -688,9 +716,16 @@ const internalCertificate = {
 				cert_data['issuer'] = match[1];
 			})
 			.then(() => {
-				return utils.exec('openssl x509 -in ' + certificate_file + ' -dates -noout');
+				const cmd3 = 'openssl x509 -in ' + certificate_file + ' -dates -noout';
+				if (debug_mode) {
+					logger.info('getCertificateInfoFromFile command: ' + cmd3);
+				}
+				return utils.exec(cmd3);
 			})
 			.then((result) => {
+				if (debug_mode) {
+					logger.info('getCertificateInfoFromFile result: ' + result);
+				}
 				// notBefore=Jul 14 04:04:29 2018 GMT
 				// notAfter=Oct 12 04:04:29 2018 GMT
 				let valid_from = null;
@@ -724,6 +759,10 @@ const internalCertificate = {
 					from: valid_from,
 					to:   valid_to
 				};
+
+				if (debug_mode) {
+					logger.info('getCertificateInfoFromFile completed: ' + JSON.stringify(cert_data));
+				}
 
 				return cert_data;
 			}).catch((err) => {
@@ -802,21 +841,21 @@ const internalCertificate = {
 		// Whether the plugin has a --<name>-credentials argument
 		const has_config_arg = certificate.meta.dns_provider !== 'route53';
 
-		let main_cmd = 
+		let main_cmd =
 			certbot_command + ' certonly --non-interactive ' +
 			'--cert-name "npm-' + certificate.id + '" ' +
 			'--agree-tos ' +
-			'--email "' + certificate.meta.letsencrypt_email + '" ' +			
+			'--email "' + certificate.meta.letsencrypt_email + '" ' +
 			'--domains "' + certificate.domain_names.join(',') + '" ' +
 			'--authenticator ' + dns_plugin.full_plugin_name + ' ' +
 			(
-				has_config_arg 
-					? '--' + dns_plugin.full_plugin_name + '-credentials "' + credentials_loc + '"' 
+				has_config_arg
+					? '--' + dns_plugin.full_plugin_name + '-credentials "' + credentials_loc + '"'
 					: ''
 			) +
 			(
-				certificate.meta.propagation_seconds !== undefined 
-					? ' --' + dns_plugin.full_plugin_name + '-propagation-seconds ' + certificate.meta.propagation_seconds 
+				certificate.meta.propagation_seconds !== undefined
+					? ' --' + dns_plugin.full_plugin_name + '-propagation-seconds ' + certificate.meta.propagation_seconds
 					: ''
 			) +
 			(le_staging ? ' --staging' : '');
@@ -862,7 +901,7 @@ const internalCertificate = {
 			})
 			.then((certificate) => {
 				if (certificate.provider === 'letsencrypt') {
-					let renewMethod = certificate.meta.dns_challenge ? internalCertificate.renewLetsEncryptSslWithDnsChallenge : internalCertificate.renewLetsEncryptSsl;		
+					let renewMethod = certificate.meta.dns_challenge ? internalCertificate.renewLetsEncryptSslWithDnsChallenge : internalCertificate.renewLetsEncryptSsl;
 
 					return renewMethod(certificate)
 						.then(() => {
@@ -931,7 +970,7 @@ const internalCertificate = {
 
 		logger.info(`Renewing Let'sEncrypt certificates via ${dns_plugin.display_name} for Cert #${certificate.id}: ${certificate.domain_names.join(', ')}`);
 
-		let main_cmd = 
+		let main_cmd =
 			certbot_command + ' renew --non-interactive ' +
 			'--cert-name "npm-' + certificate.id + '" ' +
 			'--disable-hook-validation' +
