@@ -575,10 +575,18 @@ const internalCertificate = {
 					throw new error.ValidationError('Cannot upload certificates for this type of provider');
 				}
 
+				if (debug_mode) {
+					logger.info('certificate.upload data: ' + JSON.stringify(data));
+				}
+
 				return internalCertificate.validate(data)
 					.then((validations) => {
 						if (typeof validations.certificate === 'undefined') {
 							throw new error.ValidationError('Certificate file was not provided');
+						}
+
+						if (debug_mode) {
+							logger.info('certificate.upload validate result: ' + JSON.stringify(validations));
 						}
 
 						_.map(data.files, (file, name) => {
@@ -587,7 +595,6 @@ const internalCertificate = {
 							}
 						});
 
-						// TODO: This uses a mysql only raw function that won't translate to postgres
 						return internalCertificate.update(access, {
 							id:           data.id,
 							expires_on:   moment(validations.certificate.dates.to, 'X').format('YYYY-MM-DD HH:mm:ss'),
@@ -595,12 +602,17 @@ const internalCertificate = {
 							meta:         _.clone(row.meta) // Prevent the update method from changing this value that we'll use later
 						})
 							.then((certificate) => {
-								console.log('ROWMETA:', row.meta);
+								if (debug_mode) {
+									logger.info('certificate.upload row.meta: ' + row.meta);
+								}
 								certificate.meta = row.meta;
 								return internalCertificate.writeCustomCert(certificate);
 							});
 					})
 					.then(() => {
+						if (debug_mode) {
+							logger.info('certificate.upload completed');
+						}
 						return _.pick(row.meta, internalCertificate.allowed_ssl_files);
 					});
 			});
