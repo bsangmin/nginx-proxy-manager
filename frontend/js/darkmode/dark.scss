@@ -1,0 +1,65 @@
+$navi: #031f30;
+$lightnavi: #064d79;
+$deepnavi:#0f1c24;
+$lightbule: #c0d2ec;
+
+div.page {
+    background-color: $navi;
+}
+
+form.card {
+    background-color: $deepnavi;
+    color: $lightbule;
+}
+
+
+div#header {
+    background-color: $deepnavi;
+}
+
+div#menu {
+    background-color: $navi;
+}
+
+footer.footer {
+    background-color: $deepnavi;
+}
+
+div#app-content:first-child .page-header {
+    color: $lightbule;
+}
+
+div#app-content:first-child .card {
+    background-color: $deepnavi;
+    color: $lightbule;
+}
+
+.row .card {
+    border: #616d75;
+    border-style: solid;
+    border-width: 1px;
+}
+
+.nav-tabs .nav-item.show .nav-link {
+    background-color: $navi;
+}
+
+div.dropdown-menu {
+    background-color: $deepnavi;
+    border: #313131;
+    border-style: solid;
+    border-width: 1px;
+}
+
+div.modal-content {
+    background-color: $deepnavi;
+    color: $lightbule;
+}
+
+button.close {
+    color: white;
+}
+
+button.close:hover {
+    color: white;
+}
