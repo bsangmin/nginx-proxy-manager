@@ -5,6 +5,7 @@ const Cache      = require('../../cache');
 const Controller = require('../../controller');
 const Tokens     = require('../../tokens');
 const template   = require('./main.ejs');
+const dark       = require('../../../darkmode/utils')
 
 module.exports = Mn.View.extend({
     id:        'header',
@@ -14,7 +15,8 @@ module.exports = Mn.View.extend({
     ui: {
         link:     'a',
         details:  'a.edit-details',
-        password: 'a.change-password'
+        password: 'a.change-password',
+        darkmode: 'input[name="darkmode"]'
     },
 
     events: {
@@ -40,6 +42,13 @@ module.exports = Mn.View.extend({
                     Controller.logout();
                     break;
             }
+        },
+
+        'change @ui.darkmode': function (e) {
+            e.preventDefault();
+            const enable = $(e.currentTarget).prop('checked');
+            dark.setVal(enable);
+            dark.change(enable);
         }
     },
 
@@ -58,10 +67,13 @@ module.exports = Mn.View.extend({
             }
 
             return i18n('str', 'sign-out');
-        }
+        },
+
+        darkmode: dark.getVal()
     },
 
     initialize: function () {
         this.listenTo(Cache.User, 'change', this.render);
+        dark.change(dark.getVal());
     }
 });

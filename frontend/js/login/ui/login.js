@@ -3,6 +3,7 @@ const Mn       = require('backbone.marionette');
 const template = require('./login.ejs');
 const Api      = require('../../app/api');
 const i18n     = require('../../app/i18n');
+const dark     = require('../../darkmode/utils');
 
 module.exports = Mn.View.extend({
     template:  template,
@@ -13,7 +14,8 @@ module.exports = Mn.View.extend({
         identity: 'input[name="identity"]',
         secret:   'input[name="secret"]',
         error:    '.secret-error',
-        button:   'button'
+        button:   'button',
+        darkmode: 'input[name="darkmode"]'
     },
 
     events: {
@@ -30,6 +32,13 @@ module.exports = Mn.View.extend({
                     this.ui.error.text(err.message).show();
                     this.ui.button.removeClass('btn-loading').prop('disabled', false);
                 });
+        },
+
+        'change @ui.darkmode': function (e) {
+            e.preventDefault();
+            const enable = $(e.currentTarget).prop('checked');
+            dark.setVal(enable);
+            dark.change(enable);
         }
     },
 
@@ -37,6 +46,11 @@ module.exports = Mn.View.extend({
         i18n:       i18n,
         getVersion: function () {
             return $('#login').data('version');
-        }
+        },
+        darkmode: dark.getVal()
+    },
+
+    initialize: function () {
+        dark.change(dark.getVal());
     }
 });

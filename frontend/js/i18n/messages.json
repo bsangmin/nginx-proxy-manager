@@ -264,6 +264,9 @@
       "default-site-404": "404 Page",
       "default-site-html": "Custom Page",
       "default-site-redirect": "Redirect"
+    },
+    "darkmode": {
+      "title": "Dark Mode"
     }
   }
 }

@@ -3,6 +3,13 @@
         <a class="navbar-brand" href="/">
             <img src="/images/favicons/favicon-32x32.png" border="0"> &nbsp; <%- i18n('main', 'app') %>
         </a>
+        <div class="d-flex darkmode-switch">
+            <label class="custom-switch">
+                <input type="checkbox" class="custom-switch-input" name="darkmode" value="1"<%- darkmode ? ' checked' : '' %>>
+                <span class="custom-switch-indicator"></span>
+                <span class="custom-switch-description"><%- i18n('darkmode', 'title') %></span>
+            </label>
+        </div>
 
         <div class="d-flex align-items-center order-lg-2 ml-auto">
             <div class="dropdown">

@@ -9,7 +9,8 @@ const PACKAGE              = require('./package.json');
 module.exports = {
 	entry:     {
 		main:  './js/index.js',
-		login: './js/login.js'
+		login: './js/login.js',
+		dark:  './js/darkmode/inject.js'
 	},
 	output:    {
 		path:          path.resolve(__dirname, 'dist'),
