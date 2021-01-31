@@ -1,16 +1,8 @@
-Update history
-==
-### 01/31/21
-- rewrite readme
-### 01/30/21
-- first upate
-
-
 What is this
 ==
 Dark Theme for [nginx-proxy-manager (npm)](https://github.com/jc21/nginx-proxy-manager)
 
-How to build
+How to build and install
 ==
 ## Using Docker (Recommend)
 ```
@@ -25,11 +17,10 @@ $ cd nginx-proxy-manager/frontend
 $ npm install (or yarn install)
 $ npm build (or yarn build)
 ```
-Install
-== 
+## Install
 ```
 You can see dist in frontend directory after build source
-and make container with -v option or copy to using path of frontend
+and make container with -v option on Docker or copy to using your path of frontend
 ex) -v /path/your/dist:/app/frontend
 ```
 
@@ -38,6 +29,13 @@ Sample
 ![sample1](./readme/01.png)
 ![sample2](./readme/02.png)
 ![sample3](./readme/03.png)
+
+Update history
+==
+### 01/31/21
+- rewrite readme
+### 01/30/21
+- first upate
 
 Color set
 ==
